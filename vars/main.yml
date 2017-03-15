@@ -1,0 +1,47 @@
+---
+# Common Docker Engine definitions
+
+pre_install_cleanup_docker_files:
+  - /etc/default/docker
+  - /etc/init.d/docker
+  - /etc/docker
+
+docker_service:                       "docker"
+docker_groupname:                     "docker"
+
+docker_unix_socket:                   /var/run/docker.sock
+
+docker_required_packages_by_os:
+  Ubuntu:
+    '14':
+      - apt-transport-https
+      - ca-certificates
+      - libltdl7
+      - libsystemd-journal0
+    '15':
+      - apt-transport-https
+      - ca-certificates
+    '16':
+      - apt-transport-https
+      - ca-certificates
+  RHEL:
+    - yum-utils
+  CentOS:
+    - yum-utils
+  Fedora:
+
+docker_required_packages:     "{{ docker_required_packages_by_os[ ansible_distribution ][ ansible_distribution_major_version ] |
+                         default( docker_required_packages_by_os[ ansible_distribution ] ) }}"
+
+docker_required_kernel_packages_by_os:
+  Ubuntu:
+    '14':
+      - linux-image-extra
+    '15': []
+    '16': []
+  RHEL:
+  CentOS:
+  Fedora:
+
+docker_required_kernel_packages:     "{{ docker_required_kernel_packages_by_os[ ansible_distribution ][ ansible_distribution_major_version ] |
+                                default( docker_required_kernel_packages_by_os[ ansible_distribution ] ) }}"

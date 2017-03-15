@@ -1,0 +1,38 @@
+---
+# Public Docker Engine definitions
+
+# -------------------------------------------------------------
+#  repository
+
+docker_repository_by_os:
+  Ubuntu:
+    '12':     "deb https://apt.dockerproject.org/repo ubuntu-precise main"
+    '14':     "deb https://apt.dockerproject.org/repo ubuntu-trusty main"
+    '15':     "deb https://apt.dockerproject.org/repo ubuntu-wily main"
+    '16':     "deb https://apt.dockerproject.org/repo ubuntu-xenial main"
+  RHEL:       "https://yum.dockerproject.org/repo/main/centos/7"
+  CentOS:     "https://yum.dockerproject.org/repo/main/centos/7"
+  Fedora:     "https://yum.dockerproject.org/repo/main/fedora/$releasever/"
+
+docker_engine_repository:  "{{ docker_repository_by_os[ ansible_distribution ][ ansible_distribution_major_version ] |
+                               default( docker_repository_by_os[ ansible_distribution ] ) }}"
+
+# -------------------------------------------------------------
+#  packages
+
+# for installation with package manager
+docker_package_name:          "docker-engine"
+docker_repo_name:             "docker"
+
+# for instalation from package files
+docker_packages_by_os:
+  Ubuntu:
+    - docker-engine
+  RHEL:
+    - docker-engine
+  CentOS:
+    - docker-engine
+  Fedora:
+    - docker-engine
+
+docker_packages:      "{{ docker_packages_by_os[ ansible_distribution ] }}"

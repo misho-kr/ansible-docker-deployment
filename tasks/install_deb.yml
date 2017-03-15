@@ -1,0 +1,78 @@
+---
+# Docker Engine Official Debian packages
+
+# -------------------------------------------------------------
+#  Install Docker Engine required packages (from deb repo)
+# -------------------------------------------------------------
+
+- name: add Docker Debian repository signing key
+  apt_key: data="{{ lookup('file', 'docker.pgp') }}" state=present
+
+- name: update deb repos
+  apt: update_cache="{{ deb_repo_update_cache }}"
+
+# FIXME: why is "force" required to install dependency packages?
+
+- name: install Docker required packages
+  apt: name="{{ item }}" state=present
+#       force=yes
+  with_items: '{{ docker_required_packages }}'
+
+- name: query for kernel version
+  become: no
+  command: uname -r
+  register: uname_r
+
+- set_fact: kernel_version="{{ uname_r.stdout }}"
+
+- name: install Docker required kernel packages
+  apt: name="{{ item }}-{{ kernel_version }}" state=present
+       update_cache="{{ deb_repo_update_cache }}"
+       force=yes
+  with_items: '{{ docker_required_kernel_packages }}'
+
+# -------------------------------------------------------------
+#  Install Docker Engine from deb repo
+# -------------------------------------------------------------
+
+- name: add official deb repo for Docker Engine
+  apt_repository: filename="{{ docker_repo_name }}"
+                  repo="{{ docker_engine_repository }}"
+                  state=present
+                  update_cache="yes"
+                  mode=644
+  when: docker_repo_accessible | bool
+
+# FIXME: why is "force" required to install dependency packages?
+
+- name: install Docker package
+  apt: name={{ docker_package_name }}
+#       force=yes
+  when: docker_repo_accessible | bool
+  notify:
+    - Enable docker service
+    - Restart docker service
+
+# -------------------------------------------------------------
+#  Install Docker Engine from cached deb packages
+# -------------------------------------------------------------
+
+- name: transfer cached deb packages
+  become: no
+  copy: src="{{ docker_repo_cached }}/{{ item }}" dest="{{ ansible_user_dir }}"
+  with_items: "{{ docker_packages }}"
+  when: not (docker_repo_accessible | bool)
+
+- name: install deb packages
+  apt: deb="{{ ansible_user_dir }}/{{ item }}" state=present force={{ docker_packages_force_install }}
+  with_items: "{{ docker_packages }}"
+  when: not (docker_repo_accessible | bool)
+  notify:
+    - Enable docker service
+    - Restart docker service
+
+- name: clean up transfered cached deb packages
+  become: no
+  file: name="{{ ansible_user_dir }}/{{ item }}" state=absent
+  with_items: "{{ docker_packages }}"
+  when: not (docker_repo_accessible | bool)

@@ -1,0 +1,17 @@
+---
+# Add SSL certificates
+
+- name: upload SSL certificates
+  become: no
+  copy: src="{{ item }}"
+        dest="{{ ssl_certificates_location }}"
+        mode="u=r,g=r,o=r"
+  with_items: '{{ ssl_certificates }}'
+
+- name: update SSL certificates (Ubuntu)
+  command: update-ca-certificates --fresh
+  when: ansible_distribution == "Ubuntu"
+
+- name: update SSL certificates (RedHat family)
+  command: update-ca-trust extract
+  when: ansible_distribution in ["RHEL", "CentOS", "Fedora"]

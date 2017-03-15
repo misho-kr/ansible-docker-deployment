@@ -1,0 +1,34 @@
+---
+# Docker engine installation default settings
+
+# how to pull packages and docker images, either:
+#  1. remotely (from playbook target host)
+#  2. locally (Ansible management host)
+
+docker_repo_accessible:             False
+python_repo_accessible:             False
+
+# Docker Engine CS or public Docker Engine -- cs, public or test
+docker_engine_type:                         public
+
+docker_packages_force_install:              False
+deb_repo_update_cache:                      yes
+
+remove_old_docker_engine:                   False
+
+add_user_to_docker_group:                   True
+
+# pause the playbook for this many seconds after the docker group has been updated
+wait_seconds_after_docker_group_change:     5
+
+# SSL certificates -----------------------------------------------------
+
+ssl_certificates:       []
+
+ssl_certificates_location_by_os:
+  Ubuntu:       "/usr/local/share/ca-certificates"
+  RHEL:         "/usr/share/pki/ca-trust-source/anchors"
+  CentOS:       "/usr/share/pki/ca-trust-source/anchors"
+  Fedora:       "/usr/share/pki/ca-trust-source/anchors"
+
+ssl_certificates_location:  "{{ ssl_certificates_location_by_os[ ansible_distribution ] }}"

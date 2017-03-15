@@ -1,0 +1,11 @@
+---
+# Official package repositories for Docker Engine
+
+- include: install_yum.yml
+  when: ansible_pkg_mgr == "yum"
+
+- include: install_dnf.yml
+  when: ansible_pkg_mgr == "dnf"
+
+- include: install_deb.yml
+  when: ansible_pkg_mgr == "apt"

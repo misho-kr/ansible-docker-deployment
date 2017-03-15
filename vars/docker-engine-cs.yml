@@ -1,0 +1,50 @@
+---
+# CS Docker Engine definitions
+
+# -------------------------------------------------------------
+#  repository
+
+docker_repository_by_os:
+  Ubuntu:
+    # '14':      "deb https://packages.docker.com/1.10/apt/repo ubuntu-trusty main"
+    # '14':      "deb [arch=amd64] https://packages.docker.com/1.11/apt/repo ubuntu-trusty main"
+    '14':      "deb [arch=amd64] https://packages.docker.com/1.12/apt/repo ubuntu-trusty main"
+    '15':      "deb [arch=amd64] https://packages.docker.com/1.12/apt/repo ubuntu-wily main"
+    '16':      "deb [arch=amd64] https://packages.docker.com/1.12/apt/repo ubuntu-xenial main"
+  RHEL:
+    # '7':          "https://packages.docker.com/1.11/yum/repo/main/centos/7"
+    '7':          "https://packages.docker.com/1.12/yum/repo/main/centos/7"
+  CentOS:
+    # '7':          "https://packages.docker.com/1.11/yum/repo/main/centos/7"
+    '7':          "https://packages.docker.com/1.12/yum/repo/main/centos/7"
+
+docker_engine_repository:  "{{ docker_repository_by_os[ ansible_distribution ][ ansible_distribution_major_version ] |
+                      default( docker_repository_by_os[ ansible_distribution ] ) }}"
+
+# -------------------------------------------------------------
+#  packages
+
+# for installation with package manager
+docker_package_name:          "docker-engine"
+docker_repo_name:             "docker"
+
+# for instalation from package files
+docker_packages_by_os:
+  Ubuntu:
+    '14':
+      # - docker-engine_1.10.2~cs1-0~trusty_amd64.deb
+      # - docker-engine_1.11.1~cs2-0~trusty_amd64.deb
+      # - docker-engine_1.12.5~cs5-0~ubuntu-trusty_amd64.deb
+      - docker-engine_1.12.10~cs10-0~ubuntu-trusty_amd64.deb
+    '15':
+      # - docker-engine_1.12.3~cs4-0~wily_amd64.deb
+      - docker-engine_1.12.10~cs10-0~ubuntu-wily_amd64.deb
+    '16':
+      - docker-engine_1.12.10~cs10-0~ubuntu-xenial_amd64.deb
+  RHEL:
+    - docker-engine
+  CentOS:
+    - docker-engine
+
+docker_packages:    "{{ docker_packages_by_os[ ansible_distribution ][ ansible_distribution_major_version ] |
+               default( docker_packages_by_os[ ansible_distribution ] ) }}"

@@ -1,0 +1,48 @@
+---
+# Docker Engine Official rpm packages
+
+# -------------------------------------------------------------
+#  Install Docker Engine from yum repo
+# -------------------------------------------------------------
+
+- name: add official yum repo for Docker Engine
+  yum_repository:
+    name="docker"
+    baseurl="{{ docker_engine_repository }}"
+    description="Docker repository of rpm packages"
+    gpgkey="https://yum.dockerproject.org/gpg"
+    gpgcheck=1
+    enabled=1
+    state=present
+  when: docker_repo_accessible | bool
+
+- name: install Docker package
+  yum: name={{ docker_package_name }} state=latest
+  when: docker_repo_accessible | bool
+  notify:
+    - Enable docker service
+    - Restart docker service
+
+# -------------------------------------------------------------
+#  Install Docker Engine from cached rpm packages
+# -------------------------------------------------------------
+
+- name: transfer cached rpm packages
+  become: no
+  copy: src="{{ docker_repo_cached }}/{{ item }}" dest="{{ ansible_user_dir }}"
+  with_items: "{{ docker_packages }}"
+  when: not (docker_repo_accessible | bool)
+
+- name: install rpm packages
+  yum: name="{{ ansible_user_dir }}/{{ item }}" state=present
+  with_items: "{{ docker_packages }}"
+  when: not (docker_repo_accessible | bool)
+  notify:
+    - Enable docker service
+    - Restart docker service
+
+- name: clean up transfered cached rpm packages
+  become: no
+  file: name="{{ ansible_user_dir }}/{{ item }}" state=absent
+  with_items: "{{ docker_packages }}"
+  when: not (docker_repo_accessible | bool)

@@ -1,0 +1,21 @@
+---
+# Cleanup Docker files that may be left from previoud deployments
+#
+# Those files will interfere with the Docker Engine installation
+# and cause it to fail !
+
+- name: remove (purge) old Docker Engine with apt
+  apt: name="{{ docker_package_name }}" state=absent purge=yes
+  when: ansible_pkg_mgr == "apt"
+
+- name: remove (purge) old Docker Engine with yum
+  yum: name="{{ docker_package_name }}" state=absent
+  when: ansible_pkg_mgr == "yum"
+
+- name: remove (purge) old Docker Engine with dnf
+  dnf: name="{{ docker_package_name }}" state=absent
+  when: ansible_pkg_mgr == "dnf"
+
+- name: cleanup leftover Docker files that will interfere with the Docker Engine installation
+  file: name={{ item }} state=absent
+  with_items: "{{ pre_install_cleanup_docker_files }}"

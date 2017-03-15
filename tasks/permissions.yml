@@ -1,0 +1,37 @@
+---
+# Grant permission to execute Docker commands
+
+# 1. Add user to Docker group -----------------------------------------
+
+- name: create Docker group
+  group: name={{ docker_groupname }}
+
+- name: add current user to Docker group
+  user:
+    name={{ ansible_user | default(lookup('env', 'USER'), True) }}
+    groups={{ docker_groupname }}
+    append=yes
+  register: docker_group_change
+
+# 2. Fix group ownership on Docker Unix socker ------------------------
+
+- name: check if docker unix socket exists
+  become: no
+  stat: path="{{ docker_unix_socket }}"
+  register: docker_sock_stat
+
+# give warning if the group ownership can not be set
+
+- debug: msg="docker unix socket does not exists > {{ docker_unix_socket }}"
+  become: no
+  when: not docker_sock_stat.stat.exists
+
+# ---------------------------------------------------------------------
+#
+# Note: I have forgotten when this fix was needed, keep it disabled
+#
+# - name: set docker unix socket group owner
+#   file: path="{{ docker_unix_socket }}"
+#         state=file
+#         group="{{ docker_groupname }}"
+#   when: docker_sock_stat.stat.exists
