@@ -3,10 +3,12 @@ Ansible role to deploy Docker Engine
 
 ### Goals
 
-Automate all Docker Engine deployment and control actions with [Ansible playbook](http://docs.ansible.com/ansible/playbooks.html):
+Deploy and control Docker Engine with [Ansible playbook](http://docs.ansible.com/ansible/playbooks.html)
 
-* Installation and upgrade
-* Start, stop amd status query
+Specifically:
+
+* Installation and upgrade of Docker Engine packages
+* Start, stop and status query of Docker daemon
 
 ### Preparation
 
@@ -14,21 +16,40 @@ Automate all Docker Engine deployment and control actions with [Ansible playbook
 1. Download the playbook from the GitHub repository, as a tar-ball or execute git-clone
 1. Define the target hosts
 
-The playbook will run on remote hosts listed in the [inventory](http://docs.ansible.com/intro_inventory.html). Use the [hosts.empty] as template, copy to _hosts_ and add your servers.
+### Supported Environments
 
-### Execution
+* Ubuntu 14-16
+* RedHat 7
+* CentOS 7
+* Fedora 25
 
-```bash
-$ ansible-playbook -v deploy.yml -k -K -f 10
-SSH password:
-SUDO password[defaults to SSH password]:
+### Role Variables
 
-...
-```
+| Name | Default Value | Description |
+|-|-|-|
+| `docker_engine_type` | `public` | Docker variant -- *EE* (cs) or *CE* (public) |
+| `docker_engine_package_version` | `latest` | Docker version |
+| `docker_engine_pub_version_major` | `17.03` | Version major number of Docker CE |
+| `docker_engine_pub_version_minor` | `0~ce-0` | Version minor number of Docker CE |
+| `docker_engine_cs_version_major` | `1.13` | Version major number of Docker EE |
+| `docker_engine_cs_version_minor` | `1~cs2-0` | Version minor number of Docker EE |
+| `ssl_certificates` | `<empty list>` | SSL certificates in _files/_ dir to deploy on remote hosts |
+| `remove_old_docker_engine` | `False` | remove existing Docker Engine package |
+| `add_user_to_docker_group` | `True` | add user to _Docker_ group (to run docker commands w/o sudo) |
+| `download_cache` | `download.cache` | local directory to save downloaded files |
+| `docker_repo_accessible` | `False` | Are Docker package repositories accessible from remote hosts |
 
-Notes:
+### License
 
-* Enable [passwordless login](http://linuxconfig.org/passwordless-ssh) to target hosts to avoid the prompt for password and dtop the "-k" switch
-* If __sudo__ on the target hosts does not require password, then "-K" switch is not needed
-* Ansible runs playbook actions in parallel (5 hosts) by default, use "-f" switch to scale up or down
+[MIS](LICENSE)
+
+### TODO
+
+* Optional download packages to local host (once) to avoid pulling them from every remote host
+* Configure Docker daemon to use remote key-value store
+* Support SSL cetificates to secure communication wih Docker daemon(s)
+* Add tasks to:
+  * generate private key and SSL certificate
+  * set up Swarm cluster
+  * install docker-compose
 

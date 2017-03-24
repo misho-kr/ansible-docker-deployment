@@ -1,10 +1,21 @@
 ---
 # Common Docker Engine definitions
 
-pre_install_cleanup_docker_files:
-  - /etc/default/docker
-  - /etc/init.d/docker
-  - /etc/docker
+pre_install_cleanup_docker_files_by_os:
+  'Ubuntu':
+      - /etc/default/docker
+      - /etc/init.d/docker
+      - /etc/docker
+      - /var/lib/docker
+  RHEL:
+      - /var/lib/docker
+  CentOS:
+      - /var/lib/docker
+  Fedora:
+      - /var/lib/docker
+
+pre_install_cleanup_docker_files:     "{{ pre_install_cleanup_docker_files_by_os[ ansible_distribution ][ ansible_distribution_major_version ] |
+                                 default( pre_install_cleanup_docker_files_by_os[ ansible_distribution ] ) }}"
 
 docker_service:                       "docker"
 docker_groupname:                     "docker"

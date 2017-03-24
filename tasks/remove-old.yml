@@ -5,16 +5,33 @@
 # and cause it to fail !
 
 - name: remove (purge) old Docker Engine with apt
-  apt: name="{{ docker_package_name }}" state=absent purge=yes
+  apt: name="{{ docker_engine_package_name }}" state=absent purge=yes
   when: ansible_pkg_mgr == "apt"
 
+# - name: remove official deb repo for Docker Engine
+#   apt_repository: repo="{{ docker_engine_repository }}"
+#                   state=absent
+#   when: ansible_pkg_mgr == "apt" and docker_repo_accessible | bool
+
 - name: remove (purge) old Docker Engine with yum
-  yum: name="{{ docker_package_name }}" state=absent
+  yum: name="{{ docker_engine_package_name }}" state=absent
   when: ansible_pkg_mgr == "yum"
 
+# - name: remove official YUM repo for Docker Engine
+#   yum_repository: repo="{{ docker_engine_repository }}"
+#                   state=absent
+#   when: ansible_pkg_mgr == "yum" and docker_repo_accessible | bool
+
 - name: remove (purge) old Docker Engine with dnf
-  dnf: name="{{ docker_package_name }}" state=absent
+  dnf: name="{{ docker_engine_package_name }}" state=absent
   when: ansible_pkg_mgr == "dnf"
+
+# - name: remove official DNF repo for Docker Engine
+#   yum_repository: repo="{{ docker_engine_repository }}"
+#                   state=absent
+#   when: ansible_pkg_mgr == "dnf" and docker_repo_accessible | bool
+
+# manually remove files and folders ---------------------------
 
 - name: cleanup leftover Docker files that will interfere with the Docker Engine installation
   file: name={{ item }} state=absent

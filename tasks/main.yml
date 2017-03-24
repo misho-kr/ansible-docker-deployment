@@ -1,14 +1,13 @@
 ---
 # Docker Engine deployment
 
-# Docker-Engine CS or Public Domain Docker-Engine
-- include_vars: "vars/docker-engine-{{ docker_engine_type | default('public') }}.yml"
-
 - include: remove-old.yml
   when: "{{ remove_old_docker_engine }}"
 
 - include: install.yml
+
 - include: ssl-certificates.yml
+  when: '{{ ssl_certificates | length }} > 0'
 
 # enable docker execution *without* sudo
 - include: permissions.yml

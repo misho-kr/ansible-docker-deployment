@@ -5,8 +5,10 @@
 #  1. remotely (from playbook target host)
 #  2. locally (Ansible management host)
 
-docker_repo_accessible:             False
-python_repo_accessible:             False
+docker_repo_accessible:                     False
+python_repo_accessible:                     False
+
+download_cache:                             "download.cache"
 
 # Docker Engine CS or public Docker Engine -- cs, public or test
 docker_engine_type:                         public
@@ -32,3 +34,136 @@ ssl_certificates_location_by_os:
   Fedora:       "/usr/share/pki/ca-trust-source/anchors"
 
 ssl_certificates_location:  "{{ ssl_certificates_location_by_os[ ansible_distribution ] }}"
+
+# -------------------------------------------------------------
+# -------------------------------------------------------------
+#                 CS Docker Engine definitions
+# -------------------------------------------------------------
+# -------------------------------------------------------------
+
+apt_repo_tag_by_ubuntu_version:
+  Ubuntu:
+    '12':     "ubuntu-precise"
+    '13':     "ubuntu-saucy"
+    '14':     "ubuntu-trusty"
+    '15':     "ubuntu-wily"
+    '16':     "ubuntu-xenial"
+
+apt_repo_tag:     "{{ apt_repo_tag_by_ubuntu_version[ ansible_distribution ][ ansible_distribution_major_version ] |
+                      default('n/a') }}"
+
+# -------------------------------------------------------------
+#  repository
+
+docker_engine_cs_repo_name:             "docker"
+docker_engine_cs_package_name:          "docker-engine"
+
+docker_engine_cs_version_major:         "1.13"
+docker_engine_cs_version_minor:         "1~cs2-0"
+
+docker_engine_cs_repository_by_os:
+  Ubuntu:   "deb [arch=amd64] https://packages.docker.com/{{ docker_engine_cs_version_major }}/apt/repo {{ apt_repo_tag }} main"
+  RHEL:
+    '7':    "https://packages.docker.com/{{ docker_engine_cs_version_major }}/yum/repo/main/centos/7"
+  CentOS:
+    '7':    "https://packages.docker.com/{{ docker_engine_cs_version_major }}/yum/repo/main/centos/7"
+
+docker_engine_cs_repository:  "{{ docker_engine_cs_repository_by_os[ ansible_distribution ][ ansible_distribution_major_version ] |
+                         default( docker_engine_cs_repository_by_os[ ansible_distribution ] ) }}"
+
+docker_engine_cs_package_version_by_os:
+  Ubuntu:   "{{ docker_engine_cs_version_major }}.{{ docker_engine_cs_version_minor }}~{{ apt_repo_tag }}"
+  RHEL:     TBD
+  CentOS:   TBD
+
+docker_engine_cs_package_version:     "{{ docker_engine_cs_package_version_by_os[ ansible_distribution ] | default( 'n/a' ) }}"
+
+# -------------------------------------------------------------
+#  packages for installation with package manager
+
+docker_engine_cs_packages_by_os:
+  Ubuntu:
+    - "{{ docker_engine_cs_package_name }}_{{ docker_engine_cs_package_version }}_amd64.deb"
+  RHEL:
+    - TBD
+  CentOS:
+    - TBD
+
+docker_engine_cs_packages:    "{{ docker_engine_cs_package_name[ ansible_distribution ] | default( 'n/a' ) }}"
+
+# -------------------------------------------------------------
+# -------------------------------------------------------------
+#               Public Docker Engine definitions
+# -------------------------------------------------------------
+# -------------------------------------------------------------
+
+docker_engine_pub_repo_name:            "docker"
+docker_engine_pub_package_name:         "docker-engine"
+
+docker_engine_pub_version_major:        "17.03"
+docker_engine_pub_version_minor:        "0~ce-0"
+
+docker_engine_pub_repository_by_os:
+  Ubuntu:   "deb https://apt.dockerproject.org/repo {{ apt_repo_tag }} main"
+  RHEL:     "https://yum.dockerproject.org/repo/main/centos/7"
+  CentOS:   "https://yum.dockerproject.org/repo/main/centos/7"
+  Fedora:   "https://yum.dockerproject.org/repo/main/fedora/{{ ansible_distribution_major_version }}"
+
+docker_engine_pub_repository:   "{{ docker_engine_pub_repository_by_os[ ansible_distribution ][ ansible_distribution_major_version ] |
+                           default( docker_engine_pub_repository_by_os[ ansible_distribution ] ) }}"
+
+docker_engine_pub_package_version_by_os:
+  Ubuntu:   "{{ docker_engine_pub_version_major }}.{{ docker_engine_pub_version_minor }}~{{ apt_repo_tag }}"
+  RHEL:     TBD
+  CentOS:   TBD
+  Fedora:   TBD
+
+docker_engine_pub_package_version:      "{{ docker_engine_pub_package_version_by_os[ ansible_distribution ] | default( 'n/a' ) }}"
+
+# -------------------------------------------------------------
+#  packages for installation with package manager
+
+docker_engine_pub_packages_by_os:
+  Ubuntu:
+    - "{{ docker_engine_pub_package_name }}_{{ docker_engine_pub_package_version }}_amd64.deb"
+  RHEL:
+    - TBD
+  CentOS:
+    - TBD
+  Fedora:
+    - "{{ docker_engine_pub_package_name }}-{{ docker_engine_pub_package_version }}.fc{{ ansible_distribution_major_version }}.x86_64.rpm"
+
+docker_engine_pub_packages:    "{{ docker_engine_pub_packages_by_os[ ansible_distribution ][ ansible_distribution_major_version ] |
+                          default( docker_engine_pub_packages_by_os[ ansible_distribution ] ) }}"
+
+# -------------------------------------------------------------
+# -------------------------------------------------------------
+#                   Docker Engine definitions
+# -------------------------------------------------------------
+# -------------------------------------------------------------
+
+docker_engine_repo_name_by_type:
+  cs:         "{{ docker_engine_cs_repo_name }}"
+  public:     "{{ docker_engine_pub_repo_name }}"
+
+docker_engine_repository_by_type:
+  cs:         "{{ docker_engine_cs_repository }}"
+  public:     "{{ docker_engine_pub_repository }}"
+
+docker_engine_package_name_by_type:
+  cs:         "{{ docker_engine_cs_package_name }}"
+  public:     "{{ docker_engine_pub_package_name }}"
+
+docker_engine_package_version_by_type:
+  cs:         "{{ docker_engine_cs_package_version }}"
+  public:     "{{ docker_engine_pub_package_version }}"
+
+docker_engine_packages_by_type:
+  cs:         "{{ docker_engine_cs_packages }}"
+  public:     "{{ docker_engine_pub_packages }}"
+
+docker_engine_repo_name:        "{{ docker_engine_repo_name_by_type[        docker_engine_type | default('public') ] }}"
+docker_engine_repository:       "{{ docker_engine_repository_by_type[       docker_engine_type | default('public') ] }}"
+docker_engine_package_name:     "{{ docker_engine_package_name_by_type[     docker_engine_type | default('public') ] }}"
+docker_engine_package_version:  "{{ docker_engine_package_version_by_type[  docker_engine_type | default('public') ] }}"
+docker_engine_packages:         "{{ docker_engine_packages_by_type[         docker_engine_type | default('public') ] }}"

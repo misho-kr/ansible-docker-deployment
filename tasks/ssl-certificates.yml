@@ -2,7 +2,6 @@
 # Add SSL certificates
 
 - name: upload SSL certificates
-  become: no
   copy: src="{{ item }}"
         dest="{{ ssl_certificates_location }}"
         mode="u=r,g=r,o=r"

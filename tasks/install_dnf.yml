@@ -17,7 +17,7 @@
   when: docker_repo_accessible | bool
 
 - name: install Docker package
-  dnf: name={{ docker_package_name }} state=latest
+  dnf: name={{ docker_engine_package_name }} state=latest
   when: docker_repo_accessible | bool
   notify:
     - Enable docker service
@@ -30,12 +30,12 @@
 - name: transfer cached rpm packages
   become: no
   copy: src="{{ docker_repo_cached }}/{{ item }}" dest="{{ ansible_user_dir }}"
-  with_items: "{{ docker_packages }}"
+  with_items: "{{ docker_engine_packages }}"
   when: not (docker_repo_accessible | bool)
 
 - name: install rpm packages
   dnf: name="{{ ansible_user_dir }}/{{ item }}" state=present
-  with_items: "{{ docker_packages }}"
+  with_items: "{{ docker_engine_packages }}"
   when: not (docker_repo_accessible | bool)
   notify:
     - Enable docker service
@@ -44,5 +44,5 @@
 - name: clean up transfered cached rpm packages
   become: no
   file: name="{{ ansible_user_dir }}/{{ item }}" state=absent
-  with_items: "{{ docker_packages }}"
+  with_items: "{{ docker_engine_packages }}"
   when: not (docker_repo_accessible | bool)
